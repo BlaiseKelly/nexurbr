@@ -22,7 +22,7 @@
 #'
 #' @export
 get_gb_lidar <- function(domain,
-                         product = c("DSM", "DTM"),
+                         product = c("fz_dsm", "dsm", "dtm", "vom"),
                          product_type = c("elevation", "hillshade"),
                          res = c(1, 2)) {
 

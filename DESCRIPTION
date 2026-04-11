@@ -13,4 +13,5 @@ Imports:
     magrittr,
     mapedit,
     mapview,
+    rAHNextract,
     sf

@@ -15,7 +15,7 @@
 #' msoa_imd <- match_msoa_imd(IMD_lsoa_data = my_imd_sf)
 #' }
 #' @export
-match_msoa_imd = function(IMD_lsoa_data = NULL){
+match_msoa_imd = function(IMD_lsoa_data = NULL, keep_geometry = NULL){
 
   if(is.null(IMD_lsoa_data)){
 
@@ -35,9 +35,17 @@ match_msoa_imd = function(IMD_lsoa_data = NULL){
     st_transform(27700) |>
     select(MSOA21CD,geom)
 
+
   msoa_lsoa = st_join(msoa_geo,lsoa_cent) |>
-    select(MSOA21CD,lsoa21_code) |>
-    st_set_geometry(NULL)
+    select(MSOA21CD,lsoa21_code)
+
+  if(is.null(keep_geometry)){
+    st_geometry(msoa_lsoa) = NULL
+  }
+
+  # read in hcl names
+  msoa_nm = read.csv("https://houseofcommonslibrary.github.io/msoanames/MSOA-Names-2.2.csv") |>
+    distinct(msoa21cd,msoa21hclnm, localauthorityname)
 
   msoa_imd <- IMD_2025 |>
     st_set_geometry(NULL) |>
@@ -46,8 +54,11 @@ match_msoa_imd = function(IMD_lsoa_data = NULL){
     group_by(MSOA21CD) %>%
     summarise(
       imd_weighted = weighted.mean(IMDDecil, w = pop, na.rm = TRUE),
+      population_2024 = sum(pop),
       n_lsoa = n()
-    )
+    ) |>
+    left_join(msoa_nm, by = c("MSOA21CD" = "msoa21cd"))
+
 
   return(msoa_imd)
 
